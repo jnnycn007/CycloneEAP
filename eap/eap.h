@@ -72,4 +72,211 @@
 //Revision number
 #define CYCLONE_EAP_REV_NUMBER 0
 
+//EAP support
+#ifndef EAP_SUPPORT
+   #define EAP_SUPPORT ENABLED
+#elif (EAP_SUPPORT != ENABLED && EAP_SUPPORT != DISABLED)
+   #error EAP_SUPPORT parameter is not valid
+#endif
+
+//MD5-Challenge authentication method support
+#ifndef EAP_MD5_SUPPORT
+   #define EAP_MD5_SUPPORT DISABLED
+#elif (EAP_MD5_SUPPORT != ENABLED && EAP_MD5_SUPPORT != DISABLED)
+   #error EAP_MD5_SUPPORT parameter is not valid
+#endif
+
+//EAP-TLS authentication method support
+#ifndef EAP_TLS_SUPPORT
+   #define EAP_TLS_SUPPORT DISABLED
+#elif (EAP_TLS_SUPPORT != ENABLED && EAP_TLS_SUPPORT != DISABLED)
+   #error EAP_TLS_SUPPORT parameter is not valid
+#endif
+
+//Maximum fragment size
+#ifndef EAP_MAX_FRAG_SIZE
+   #define EAP_MAX_FRAG_SIZE 1000
+#elif (EAP_MAX_FRAG_SIZE < 100 || EAP_MAX_FRAG_SIZE > 1500)
+   #error EAP_DEFAULT_CLIENT_TIMEOUT parameter is not valid
+#endif
+
+//Default client timeout
+#ifndef EAP_DEFAULT_CLIENT_TIMEOUT
+   #define EAP_DEFAULT_CLIENT_TIMEOUT 30
+#elif (EAP_DEFAULT_CLIENT_TIMEOUT < 0)
+   #error EAP_DEFAULT_CLIENT_TIMEOUT parameter is not valid
+#endif
+
+//C++ guard
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+/**
+ * @brief EAPOL protocol versions
+ **/
+
+typedef enum
+{
+   EAPOL_VERSION_1 = 1, ///<IEEE 802.1X-2001
+   EAPOL_VERSION_2 = 2, ///<IEEE 802.1X-2004
+   EAPOL_VERSION_3 = 3  ///<IEEE 802.1X-2010
+} EapolVersion;
+
+
+/**
+ * @brief EAPOL packet types
+ **/
+
+typedef enum
+{
+   EAPOL_TYPE_EAP                    = 0, ///<EAPOL-EAP
+   EAPOL_TYPE_START                  = 1, ///<EAPOL-Start
+   EAPOL_TYPE_LOGOFF                 = 2, ///<EAPOL-Logoff
+   EAPOL_TYPE_KEY                    = 3, ///<EAPOL-Key
+   EAPOL_TYPE_ENCAPSULATED_ASF_ALERT = 4, ///<EAPOL-Encapsulated-ASF-Alert
+   EAPOL_TYPE_MKA                    = 5, ///<EAPOL-MKA
+   EAPOL_TYPE_ANNOUNCEMENT_GENERIC   = 6, ///<EAPOL-Announcement (Generic)
+   EAPOL_TYPE_ANNOUNCEMENT_SPECIFIC  = 7, ///<EAPOL-Announcement (Specific)
+   EAPOL_TYPE_ANNOUNCEMENT_REQ       = 8  ///<EAPOL-Announcement-Req
+} EapolType;
+
+
+/**
+ * @brief EAP codes
+ **/
+
+typedef enum
+{
+   EAP_CODE_REQUEST  = 1, ///<Request
+   EAP_CODE_RESPONSE = 2, ///<Response
+   EAP_CODE_SUCCESS  = 3, ///<Success
+   EAP_CODE_FAILURE  = 4  ///<Failure
+} EapCode;
+
+
+/**
+ * @brief EAP method types
+ **/
+
+typedef enum
+{
+   EAP_METHOD_TYPE_NONE          = 0,  ///<None
+   EAP_METHOD_TYPE_IDENTITY      = 1,  ///<Identity
+   EAP_METHOD_TYPE_NOTIFICATION  = 2,  ///<Notification
+   EAP_METHOD_TYPE_NAK           = 3,  ///<Legacy Nak
+   EAP_METHOD_TYPE_MD5_CHALLENGE = 4,  ///<MD5-Challenge
+   EAP_METHOD_TYPE_OTP           = 5,  ///<One-Time Password (OTP)
+   EAP_METHOD_TYPE_GTC           = 6,  ///<Generic Token Card (GTC)
+   EAP_METHOD_TYPE_TLS           = 13, ///<EAP-TLS
+   EAP_METHOD_TYPE_TTLS          = 21, ///<EAP-TTLS
+   EAP_METHOD_TYPE_PEAP          = 25, ///<PEAP
+   EAP_METHOD_TYPE_MSCHAP_V2     = 29, ///<EAP-MSCHAP-V2
+   EAP_METHOD_TYPE_EXPANDED_NAK  = 254 ///<Expanded NAK
+} EapMethodType;
+
+
+/**
+ * @brief EAP-TLS flags
+ **/
+
+typedef enum
+{
+   EAP_TLS_FLAGS_L = 0x80, ///<Length included
+   EAP_TLS_FLAGS_M = 0x40, ///<More fragments
+   EAP_TLS_FLAGS_S = 0x20, ///<EAP-TLS start
+   EAP_TLS_FLAGS_R = 0x1F  ///<Reserved
+} EapTlsFlags;
+
+
+//CC-RX, CodeWarrior or Win32 compiler?
+#if defined(__CCRX__)
+   #pragma pack
+#elif defined(__CWCC__) || defined(_WIN32)
+   #pragma pack(push, 1)
+#endif
+
+
+/**
+ * @brief EAPOL PDU
+ **/
+
+typedef __packed_struct
+{
+   uint8_t protocolVersion; //0
+   uint8_t packetType;      //1
+   uint16_t packetBodyLen;  //2-3
+   uint8_t packetBody[];    //4
+} EapolPdu;
+
+
+/**
+ * @brief EAP packet
+ **/
+
+typedef __packed_struct
+{
+   uint8_t code;       //0
+   uint8_t identifier; //1
+   uint16_t length;    //2-3
+   uint8_t data[];     //4
+} EapPacket;
+
+
+/**
+ * @brief EAP request
+ **/
+
+typedef __packed_struct
+{
+   uint8_t code;       //0
+   uint8_t identifier; //1
+   uint16_t length;    //2-3
+   uint8_t type;       //4
+   uint8_t data[];     //5
+} EapRequest;
+
+
+/**
+ * @brief EAP response
+ **/
+
+typedef __packed_struct
+{
+   uint8_t code;       //0
+   uint8_t identifier; //1
+   uint16_t length;    //2-3
+   uint8_t type;       //4
+   uint8_t data[];     //5
+} EapResponse;
+
+
+/**
+ * @brief EAP-TLS packet
+ **/
+
+typedef __packed_struct
+{
+   uint8_t code;       //0
+   uint8_t identifier; //1
+   uint16_t length;    //2-3
+   uint8_t type;       //4
+   uint8_t flags;      //5
+   uint8_t data[];     //6
+} EapTlsPacket;
+
+
+//CC-RX, CodeWarrior or Win32 compiler?
+#if defined(__CCRX__)
+   #pragma unpack
+#elif defined(__CWCC__) || defined(_WIN32)
+   #pragma pack(pop)
+#endif
+
+//C++ guard
+#ifdef __cplusplus
+}
+#endif
+
 #endif
