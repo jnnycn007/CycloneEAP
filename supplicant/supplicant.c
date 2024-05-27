@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.0
+ * @version 2.4.2
  **/
 
 //Switch to the appropriate trace level
@@ -91,6 +91,9 @@ error_t supplicantInit(SupplicantContext *context,
 
    //Ensure the parameters are valid
    if(context == NULL || settings == NULL)
+      return ERROR_INVALID_PARAMETER;
+
+   if(settings->interface == NULL)
       return ERROR_INVALID_PARAMETER;
 
    //Clear supplicant context
@@ -247,7 +250,7 @@ error_t supplicantStart(SupplicantContext *context)
       error = supplicantAcceptPaeGroupAddr(context);
       //Any error to report?
       if(error)
-         return error;
+         break;
 
       //Start the supplicant
       context->stop = FALSE;

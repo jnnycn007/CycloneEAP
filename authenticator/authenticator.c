@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.0
+ * @version 2.4.2
  **/
 
 //Switch to the appropriate trace level
@@ -940,7 +940,7 @@ error_t authenticatorStart(AuthenticatorContext *context)
       error = authenticatorAcceptPaeGroupAddr(context);
       //Any error to report?
       if(error)
-         return error;
+         break;
 
       //Start the authenticator
       context->stop = FALSE;

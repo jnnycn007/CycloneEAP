@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.0
+ * @version 2.4.2
  **/
 
 //Switch to the appropriate trace level
@@ -190,6 +190,14 @@ void eapPeerFsm(SupplicantContext *context)
             eapPeerChangeState(context, EAP_PEER_STATE_SUCCESS);
          }
          //Errata
+         else if(context->rxSuccess && context->lastId != EAP_LAST_ID_NONE &&
+            context->reqId == ((context->lastId + 1) % 256) &&
+            context->decision != EAP_DECISION_FAIL)
+         {
+            //Switch to the SUCCESS state
+            eapPeerChangeState(context, EAP_PEER_STATE_SUCCESS);
+         }
+         //Errata
          else if(context->rxSuccess && context->lastId == EAP_LAST_ID_NONE &&
             context->allowCanned)
          {
@@ -200,6 +208,16 @@ void eapPeerFsm(SupplicantContext *context)
             ((context->rxFailure && context->decision != EAP_DECISION_UNCOND_SUCC) ||
             (context->rxSuccess && context->decision == EAP_DECISION_FAIL)) &&
             context->reqId == context->lastId)
+         {
+            //Switch to the FAILURE state
+            eapPeerChangeState(context, EAP_PEER_STATE_FAILURE);
+         }
+         //Errata
+         else if(context->methodState != EAP_METHOD_STATE_CONT &&
+            ((context->rxFailure && context->decision != EAP_DECISION_UNCOND_SUCC) ||
+            (context->rxSuccess && context->decision == EAP_DECISION_FAIL)) &&
+            context->lastId != EAP_LAST_ID_NONE &&
+            context->reqId == ((context->lastId + 1) % 256))
          {
             //Switch to the FAILURE state
             eapPeerChangeState(context, EAP_PEER_STATE_FAILURE);

@@ -1,6 +1,6 @@
 /**
  * @file eap_tls.h
- * @brief EAP-TLS authentication protocol
+ * @brief EAP-TLS authentication method
  *
  * @section License
  *
@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.0
+ * @version 2.4.2
  **/
 
 #ifndef _EAP_TLS_H

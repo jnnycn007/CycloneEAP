@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.0
+ * @version 2.4.2
  **/
 
 //Switch to the appropriate trace level
@@ -286,10 +286,14 @@ void supplicantProcessEapolPdu(SupplicantContext *context)
       return;
 #endif
 
-   //The destination MAC address must the group address recognized by the
-   //receiving MSAP for the application scenario
-   if(!macCompAddr(&msg.destMacAddr, &PAE_GROUP_ADDR))
+   //The destination MAC address field contains the PAE group address, or
+   //the specific MAC address of the PAE (refer to IEEE Std 802.1X-2004,
+   //section 7.5.7)
+   if(!macCompAddr(&msg.destMacAddr, &PAE_GROUP_ADDR) &&
+      !macCompAddr(&msg.destMacAddr, &context->interface->macAddr))
+   {
       return;
+   }
 
    //The received MPDU must contain the PAE EtherType
    if(msg.ethType != ETH_TYPE_EAPOL)

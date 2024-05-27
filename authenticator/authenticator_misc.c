@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.0
+ * @version 2.4.2
  **/
 
 //Switch to the appropriate trace level
@@ -382,8 +382,7 @@ void authenticatorProcessEapolPdu(AuthenticatorContext *context)
    portIndex = 1;
 #endif
 
-   //The destination MAC address must the group address recognized by the
-   //receiving MSAP for the application scenario
+   //The destination MAC address field must contain the PAE group address
    if(!macCompAddr(&msg.destMacAddr, &PAE_GROUP_ADDR))
       return;
 
