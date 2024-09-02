@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.2
+ * @version 2.4.4
  **/
 
 //Switch to the appropriate trace level
@@ -199,7 +199,6 @@ error_t authenticatorMgmtSetPortControl(AuthenticatorContext *context,
    {
       //Save the value of the parameter
       port->portControl = portControl;
-
       //Update authenticator state machines
       authenticatorFsm(context);
    }
@@ -414,7 +413,6 @@ error_t authenticatorMgmtSetReAuthEnabled(AuthenticatorContext *context,
    {
       //Save the value of the parameter
       port->reAuthEnabled = reAuthEnabled;
-
       //Update authenticator state machines
       authenticatorFsm(context);
    }
@@ -457,7 +455,6 @@ error_t authenticatorMgmtSetKeyTxEnabled(AuthenticatorContext *context,
    {
       //Save the value of the parameter
       port->keyTxEnabled = keyTxEnabled;
-
       //Update authenticator state machines
       authenticatorFsm(context);
    }

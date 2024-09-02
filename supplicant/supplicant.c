@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.2
+ * @version 2.4.4
  **/
 
 //Switch to the appropriate trace level
@@ -59,8 +59,10 @@ void supplicantGetDefaultSettings(SupplicantSettings *settings)
    settings->portIndex = 0;
 
 #if (EAP_TLS_SUPPORT == ENABLED)
-   //TLS initialization callback function
+   //TLS negotiation initialization callback function
    settings->tlsInitCallback = NULL;
+   //TLS negotiation completion callback function
+   settings->tlsCompleteCallback = NULL;
 #endif
 
    //Supplicant PAE state change callback function
@@ -112,22 +114,49 @@ error_t supplicantInit(SupplicantContext *context,
    context->tickCallback = settings->tickCallback;
 
 #if (EAP_TLS_SUPPORT == ENABLED)
-   //TLS initialization callback function
+   //TLS negotiation initialization callback function
    context->tlsInitCallback = settings->tlsInitCallback;
+   //TLS negotiation completion callback function
+   context->tlsCompleteCallback = settings->tlsCompleteCallback;
 #endif
+
+   //Default value of parameters
+   context->portControl = SUPPLICANT_PORT_MODE_AUTO;
+   context->userLogoff = FALSE;
+   context->heldPeriod = SUPPLICANT_DEFAULT_HELD_PERIOD;
+   context->authPeriod = SUPPLICANT_DEFAULT_AUTH_PERIOD;
+   context->startPeriod = SUPPLICANT_DEFAULT_START_PERIOD;
+   context->maxStart = SUPPLICANT_DEFAULT_MAX_START;
+   context->clientTimeout = EAP_DEFAULT_CLIENT_TIMEOUT;
 
    //Initialize supplicant state machine
    supplicantInitFsm(context);
 
-   //Initialize status code
-   error = NO_ERROR;
-
-   //Create an event object to poll the state of sockets
-   if(!osCreateEvent(&context->event))
+   //Start of exception handling block
+   do
    {
-      //Failed to create event
-      error = ERROR_OUT_OF_RESOURCES;
-   }
+      //Create a mutex to prevent simultaneous access to 802.1X supplicant
+      //context
+      if(!osCreateMutex(&context->mutex))
+      {
+         //Failed to create mutex
+         error = ERROR_OUT_OF_RESOURCES;
+         break;
+      }
+
+      //Create an event object to poll the state of the raw socket
+      if(!osCreateEvent(&context->event))
+      {
+         //Failed to create event
+         error = ERROR_OUT_OF_RESOURCES;
+         break;
+      }
+
+      //Successful initialization
+      error = NO_ERROR;
+
+      //End of exception handling block
+   } while(0);
 
    //Any error to report?
    if(error)
@@ -195,6 +224,243 @@ error_t supplicantSetPassword(SupplicantContext *context,
    //EAP-MD5 challenge is not implemented
    return ERROR_NOT_IMPLEMENTED;
 #endif
+}
+
+
+/**
+ * @brief Set the value of the heldPeriod parameter
+ * @param[in] context Pointer to the 802.1X supplicant context
+ * @param[in] heldPeriod Value of the heldPeriod parameter
+ * @return Error code
+ **/
+
+error_t supplicantSetHeldPeriod(SupplicantContext *context, uint_t heldPeriod)
+{
+   //Check parameters
+   if(context == NULL || heldPeriod == 0)
+      return ERROR_INVALID_PARAMETER;
+
+   //Acquire exclusive access to the 802.1X supplicant context
+   osAcquireMutex(&context->mutex);
+   //Save parameter value
+   context->heldPeriod = heldPeriod;
+   //Release exclusive access to the 802.1X supplicant context
+   osReleaseMutex(&context->mutex);
+
+   //Successful processing
+   return NO_ERROR;
+}
+
+
+/**
+ * @brief Set the value of the authPeriod parameter
+ * @param[in] context Pointer to the 802.1X supplicant context
+ * @param[in] authPeriod Value of the authPeriod parameter
+ * @return Error code
+ **/
+
+error_t supplicantSetAuthPeriod(SupplicantContext *context, uint_t authPeriod)
+{
+   //Check parameters
+   if(context == NULL || authPeriod == 0)
+      return ERROR_INVALID_PARAMETER;
+
+   //Acquire exclusive access to the 802.1X supplicant context
+   osAcquireMutex(&context->mutex);
+   //Save parameter value
+   context->authPeriod = authPeriod;
+   //Release exclusive access to the 802.1X supplicant context
+   osReleaseMutex(&context->mutex);
+
+   //Successful processing
+   return NO_ERROR;
+}
+
+
+/**
+ * @brief Set the value of the startPeriod parameter
+ * @param[in] context Pointer to the 802.1X supplicant context
+ * @param[in] startPeriod Value of the startPeriod parameter
+ * @return Error code
+ **/
+
+error_t supplicantSetStartPeriod(SupplicantContext *context, uint_t startPeriod)
+{
+   //Check parameters
+   if(context == NULL || startPeriod == 0)
+      return ERROR_INVALID_PARAMETER;
+
+   //Acquire exclusive access to the 802.1X supplicant context
+   osAcquireMutex(&context->mutex);
+   //Save parameter value
+   context->startPeriod = startPeriod;
+   //Release exclusive access to the 802.1X supplicant context
+   osReleaseMutex(&context->mutex);
+
+   //Successful processing
+   return NO_ERROR;
+}
+
+
+/**
+ * @brief Set the value of the maxStart parameter
+ * @param[in] context Pointer to the 802.1X supplicant context
+ * @param[in] maxStart Value of the maxStart parameter
+ * @return Error code
+ **/
+
+error_t supplicantSetMaxStart(SupplicantContext *context, uint_t maxStart)
+{
+   //Check parameters
+   if(context == NULL || maxStart == 0)
+      return ERROR_INVALID_PARAMETER;
+
+   //Acquire exclusive access to the 802.1X supplicant context
+   osAcquireMutex(&context->mutex);
+
+   //Save parameter value
+   context->maxStart = maxStart;
+
+   //Update supplicant state machines
+   if(context->running)
+   {
+      supplicantFsm(context);
+   }
+
+   //Release exclusive access to the 802.1X supplicant context
+   osReleaseMutex(&context->mutex);
+
+   //Successful processing
+   return NO_ERROR;
+}
+
+
+/**
+ * @brief Set the value of the clientTimeout parameter
+ * @param[in] context Pointer to the 802.1X supplicant context
+ * @param[in] clientTimeout Value of the clientTimeout parameter
+ * @return Error code
+ **/
+
+error_t supplicantSetClientTimeout(SupplicantContext *context,
+   uint_t clientTimeout)
+{
+   //Check parameters
+   if(context == NULL || clientTimeout == 0)
+      return ERROR_INVALID_PARAMETER;
+
+   //Acquire exclusive access to the 802.1X supplicant context
+   osAcquireMutex(&context->mutex);
+   //Save parameter value
+   context->clientTimeout = clientTimeout;
+   //Release exclusive access to the 802.1X supplicant context
+   osReleaseMutex(&context->mutex);
+
+   //Successful processing
+   return NO_ERROR;
+}
+
+
+/**
+ * @brief Set the value of the portControl variable
+ * @param[in] context Pointer to the 802.1X supplicant context
+ * @param[in] portControl Value of the portControl variable
+ * @return Error code
+ **/
+
+error_t supplicantSetPortControl(SupplicantContext *context,
+   SupplicantPortMode portControl)
+{
+   //Make sure the 802.1X supplicant context is valid
+   if(context == NULL)
+      return ERROR_INVALID_PARAMETER;
+
+   //Acquire exclusive access to the 802.1X supplicant context
+   osAcquireMutex(&context->mutex);
+
+   //The portControl variable is used to switch between the auto and non-auto
+   //modes of operation of the supplicant PAE state machine
+   context->portControl = portControl;
+
+   //Update supplicant state machines
+   if(context->running)
+   {
+      supplicantFsm(context);
+   }
+
+   //Release exclusive access to the 802.1X supplicant context
+   osReleaseMutex(&context->mutex);
+
+   //Successful processing
+   return NO_ERROR;
+}
+
+
+/**
+ * @brief Perform user logon
+ * @param[in] context Pointer to the 802.1X supplicant context
+ * @return Error code
+ **/
+
+error_t supplicantLogOn(SupplicantContext *context)
+{
+   //Make sure the 802.1X supplicant context is valid
+   if(context == NULL)
+      return ERROR_INVALID_PARAMETER;
+
+   //Acquire exclusive access to the 802.1X supplicant context
+   osAcquireMutex(&context->mutex);
+
+   //The userLogoff variable is controlled externally to the state machine and
+   //reflects the operation of the process in the supplicant system that
+   //controls the logged on/logged off state of the user of the system
+   context->userLogoff = FALSE;
+
+   //Update supplicant state machines
+   if(context->running)
+   {
+      supplicantFsm(context);
+   }
+
+   //Release exclusive access to the 802.1X supplicant context
+   osReleaseMutex(&context->mutex);
+
+   //Successful processing
+   return NO_ERROR;
+}
+
+
+/**
+ * @brief Perform user logoff
+ * @param[in] context Pointer to the 802.1X supplicant context
+ * @return Error code
+ **/
+
+error_t supplicantLogOff(SupplicantContext *context)
+{
+   //Make sure the 802.1X supplicant context is valid
+   if(context == NULL)
+      return ERROR_INVALID_PARAMETER;
+
+   //Acquire exclusive access to the 802.1X supplicant context
+   osAcquireMutex(&context->mutex);
+
+   //The userLogoff variable is controlled externally to the state machine and
+   //reflects the operation of the process in the supplicant system that
+   //controls the logged on/logged off state of the user of the system
+   context->userLogoff = TRUE;
+
+   //Update supplicant state machines
+   if(context->running)
+   {
+      supplicantFsm(context);
+   }
+
+   //Release exclusive access to the 802.1X supplicant context
+   osReleaseMutex(&context->mutex);
+
+   //Successful processing
+   return NO_ERROR;
 }
 
 
@@ -314,6 +580,7 @@ error_t supplicantStop(SupplicantContext *context)
    //Check whether the supplicant is running
    if(context->running)
    {
+#if (NET_RTOS_SUPPORT == ENABLED)
       //Stop the supplicant
       context->stop = TRUE;
       //Send a signal to the task to abort any blocking operation
@@ -324,6 +591,7 @@ error_t supplicantStop(SupplicantContext *context)
       {
          osDelayTask(1);
       }
+#endif
 
       //Remove the PAE group address from the static MAC table
       supplicantDropPaeGroupAddr(context);
@@ -381,11 +649,6 @@ void supplicantTask(SupplicantContext *context)
       //Stop request?
       if(context->stop)
       {
-         //The supplicant considers that its user is logged off
-         context->userLogoff = TRUE;
-         //Update supplicant state machines
-         supplicantFsm(context);
-
          //Stop supplicant operation
          context->running = FALSE;
          //Task epilogue
@@ -397,8 +660,12 @@ void supplicantTask(SupplicantContext *context)
       //Any EAPOL packet received?
       if(eventDesc.eventFlags != 0)
       {
+         //Acquire exclusive access to the 802.1X supplicant context
+         osAcquireMutex(&context->mutex);
          //Process incoming EAPOL packet
          supplicantProcessEapolPdu(context);
+         //Release exclusive access to the 802.1X supplicant context
+         osReleaseMutex(&context->mutex);
       }
 
       //Get current time
@@ -407,8 +674,13 @@ void supplicantTask(SupplicantContext *context)
       //Timers have a resolution of one second
       if((time - context->timestamp) >= SUPPLICANT_TICK_INTERVAL)
       {
+         //Acquire exclusive access to the 802.1X supplicant context
+         osAcquireMutex(&context->mutex);
          //Handle periodic operations
          supplicantTick(context);
+         //Release exclusive access to the 802.1X supplicant context
+         osReleaseMutex(&context->mutex);
+
          //Save current time
          context->timestamp = time;
       }
@@ -430,6 +702,7 @@ void supplicantDeinit(SupplicantContext *context)
    if(context != NULL)
    {
       //Free previously allocated resources
+      osDeleteMutex(&context->mutex);
       osDeleteEvent(&context->event);
 
       //Clear supplicant context

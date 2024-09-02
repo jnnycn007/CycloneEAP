@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.2
+ * @version 2.4.4
  **/
 
 #ifndef _SUPPLICANT_H
@@ -102,6 +102,13 @@ struct _SupplicantContext;
    #error SUPPLICANT_DEFAULT_HELD_PERIOD parameter is not valid
 #endif
 
+//Initialization value used for the authWhile timer
+#ifndef SUPPLICANT_DEFAULT_AUTH_PERIOD
+   #define SUPPLICANT_DEFAULT_AUTH_PERIOD 30
+#elif (SUPPLICANT_DEFAULT_AUTH_PERIOD < 0)
+   #error SUPPLICANT_DEFAULT_AUTH_PERIOD parameter is not valid
+#endif
+
 //Initialization value used for the startWhen timer
 #ifndef SUPPLICANT_DEFAULT_START_PERIOD
    #define SUPPLICANT_DEFAULT_START_PERIOD 30
@@ -114,13 +121,6 @@ struct _SupplicantContext;
    #define SUPPLICANT_DEFAULT_MAX_START 3
 #elif (SUPPLICANT_DEFAULT_MAX_START < 0)
    #error SUPPLICANT_DEFAULT_MAX_START parameter is not valid
-#endif
-
-//Initialization value used for the authWhile timer
-#ifndef SUPPLICANT_DEFAULT_AUTH_PERIOD
-   #define SUPPLICANT_DEFAULT_AUTH_PERIOD 30
-#elif (SUPPLICANT_DEFAULT_AUTH_PERIOD < 0)
-   #error SUPPLICANT_DEFAULT_AUTH_PERIOD parameter is not valid
 #endif
 
 //EAP-TLS supported?
@@ -138,11 +138,18 @@ extern "C" {
 #if (EAP_TLS_SUPPORT == ENABLED)
 
 /**
- * @brief TLS initialization callback function
+ * @brief TLS negotiation initialization callback function
  **/
 
 typedef error_t (*SupplicantTlsInitCallback)(SupplicantContext *context,
    TlsContext *tlsContext);
+
+/**
+ * @brief TLS negotiation completion callback function
+ **/
+
+typedef void (*SupplicantTlsCompleteCallback)(SupplicantContext *context,
+   TlsContext *tlsContext, error_t error);
 
 #endif
 
@@ -188,7 +195,8 @@ typedef struct
    NetInterface *interface;                                         ///<Underlying network interface
    uint_t portIndex;                                                ///<Port index
 #if (EAP_TLS_SUPPORT == ENABLED)
-   SupplicantTlsInitCallback tlsInitCallback;                       ///<TLS initialization callback function
+   SupplicantTlsInitCallback tlsInitCallback;                       ///<TLS negotiation initialization callback function
+   SupplicantTlsCompleteCallback tlsCompleteCallback;               ///<TLS negotiation completion callback function
 #endif
    SupplicantPaeStateChangeCallback paeStateChangeCallback;         ///<Supplicant PAE state change callback function
    SupplicantBackendStateChangeCallback backendStateChangeCallback; ///<Supplicant backend state change callback function
@@ -205,7 +213,8 @@ struct _SupplicantContext
 {
    bool_t running;                               ///<Operational state of the supplicant
    bool_t stop;                                  ///<Stop request
-   OsEvent event;                                ///<Event object used to poll the sockets
+   OsMutex mutex;                                ///<Mutex preventing simultaneous access to 802.1X supplicant context
+   OsEvent event;                                ///<Event object used to poll the underlying socket
    OsTaskParameters taskParams;                  ///<Task parameters
    OsTaskId taskId;                              ///<Task identifier
    NetInterface *interface;                      ///<Underlying network interface
@@ -219,7 +228,8 @@ struct _SupplicantContext
 #if (EAP_TLS_SUPPORT == ENABLED)
    TlsContext *tlsContext;                       ///<TLS context
    TlsSessionState tlsSession;                   ///<TLS session state
-   SupplicantTlsInitCallback tlsInitCallback;    ///<TLS initialization callback function
+   SupplicantTlsInitCallback tlsInitCallback;    ///<TLS negotiation initialization callback function
+   SupplicantTlsCompleteCallback tlsCompleteCallback;               ///<TLS negotiation completion callback function
 #endif
    SupplicantPaeStateChangeCallback paeStateChangeCallback;         ///<Supplicant PAE state change callback function
    SupplicantBackendStateChangeCallback backendStateChangeCallback; ///<Supplicant backend state change callback function
@@ -318,6 +328,20 @@ error_t supplicantSetUsername(SupplicantContext *context,
 
 error_t supplicantSetPassword(SupplicantContext *context,
    const char_t *password);
+
+error_t supplicantSetHeldPeriod(SupplicantContext *context, uint_t heldPeriod);
+error_t supplicantSetAuthPeriod(SupplicantContext *context, uint_t authPeriod);
+error_t supplicantSetStartPeriod(SupplicantContext *context, uint_t startPeriod);
+error_t supplicantSetMaxStart(SupplicantContext *context, uint_t maxStart);
+
+error_t supplicantSetClientTimeout(SupplicantContext *context,
+   uint_t clientTimeout);
+
+error_t supplicantSetPortControl(SupplicantContext *context,
+   SupplicantPortMode portControl);
+
+error_t supplicantLogOn(SupplicantContext *context);
+error_t supplicantLogOff(SupplicantContext *context);
 
 error_t supplicantStart(SupplicantContext *context);
 error_t supplicantStop(SupplicantContext *context);

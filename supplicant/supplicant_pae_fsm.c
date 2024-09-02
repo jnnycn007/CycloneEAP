@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.2
+ * @version 2.4.4
  **/
 
 //Switch to the appropriate trace level
@@ -169,10 +169,13 @@ void supplicantPaeFsm(SupplicantContext *context)
          }
          else if(context->eapSuccess || context->eapFail)
          {
+//Errata
+#if 0
             //If the higher layer has decided it is satisfied with an
             //eapSuccess or eapFail, the supplicant transitions directly to
             //the AUTHENTICATING state
             supplicantPaeChangeState(context, SUPPLICANT_PAE_STATE_AUTHENTICATING);
+#endif
          }
          else
          {

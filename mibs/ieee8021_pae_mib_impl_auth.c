@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.2
+ * @version 2.4.4
  **/
 
 //Switch to the appropriate trace level
@@ -79,7 +79,7 @@ error_t ieee8021PaeMibSetDot1xAuthConfigEntry(const MibObject *object, const uin
       return ERROR_INSTANCE_NOT_FOUND;
 
    //dot1xAuthAdminControlledDirections object?
-   if(!strcmp(object->name, "dot1xAuthAdminControlledDirections"))
+   if(osStrcmp(object->name, "dot1xAuthAdminControlledDirections") == 0)
    {
       //This object specifies the value of the administrative controlled
       //directions parameter for the port
@@ -96,7 +96,7 @@ error_t ieee8021PaeMibSetDot1xAuthConfigEntry(const MibObject *object, const uin
       }
    }
    //dot1xAuthAuthControlledPortControl object?
-   else if(!strcmp(object->name, "dot1xAuthAuthControlledPortControl"))
+   else if(osStrcmp(object->name, "dot1xAuthAuthControlledPortControl") == 0)
    {
       //This object specifies the value of the controlled port control
       //parameter for the port
@@ -127,7 +127,7 @@ error_t ieee8021PaeMibSetDot1xAuthConfigEntry(const MibObject *object, const uin
       }
    }
    //dot1xAuthQuietPeriod object?
-   else if(!strcmp(object->name, "dot1xAuthQuietPeriod"))
+   else if(osStrcmp(object->name, "dot1xAuthQuietPeriod") == 0)
    {
       //This object specifies the value, in seconds, of the quietPeriod constant
       //currently in use by the authenticator PAE state machine
@@ -135,7 +135,7 @@ error_t ieee8021PaeMibSetDot1xAuthConfigEntry(const MibObject *object, const uin
          dot1xPaePortNumber, value->unsigned32, commit);
    }
    //dot1xAuthServerTimeout object?
-   else if(!strcmp(object->name, "dot1xAuthServerTimeout"))
+   else if(osStrcmp(object->name, "dot1xAuthServerTimeout") == 0)
    {
       //This object specifies The value, in seconds, of the serverTimeout
       //constant currently in use by the backend authentication state machine
@@ -143,7 +143,7 @@ error_t ieee8021PaeMibSetDot1xAuthConfigEntry(const MibObject *object, const uin
          dot1xPaePortNumber, value->unsigned32, commit);
    }
    //dot1xAuthReAuthPeriod object?
-   else if(!strcmp(object->name, "dot1xAuthReAuthPeriod"))
+   else if(osStrcmp(object->name, "dot1xAuthReAuthPeriod") == 0)
    {
       //This object specifies the value, in seconds, of the reAuthPeriod
       //constant currently in use by the reauthentication timer state machine
@@ -151,7 +151,7 @@ error_t ieee8021PaeMibSetDot1xAuthConfigEntry(const MibObject *object, const uin
          dot1xPaePortNumber, value->unsigned32, commit);
    }
    //dot1xAuthReAuthEnabled object?
-   else if(!strcmp(object->name, "dot1xAuthReAuthEnabled"))
+   else if(osStrcmp(object->name, "dot1xAuthReAuthEnabled") == 0)
    {
       //This object specifies the enable/disable control used by the
       //reauthentication timer state machine
@@ -174,7 +174,7 @@ error_t ieee8021PaeMibSetDot1xAuthConfigEntry(const MibObject *object, const uin
       }
    }
    //dot1xAuthKeyTxEnabled object?
-   else if(!strcmp(object->name, "dot1xAuthKeyTxEnabled"))
+   else if(osStrcmp(object->name, "dot1xAuthKeyTxEnabled") == 0)
    {
       //This object specifies the value of the keyTransmissionEnabled constant
       //currently in use by the authenticator PAE state machine
@@ -254,7 +254,7 @@ error_t ieee8021PaeMibGetDot1xAuthConfigEntry(const MibObject *object, const uin
    port = &context->ports[dot1xPaePortNumber - 1];
 
    //dot1xAuthPaeState object?
-   if(!strcmp(object->name, "dot1xAuthPaeState"))
+   if(osStrcmp(object->name, "dot1xAuthPaeState") == 0)
    {
       //This object indicates the current value of the authenticator PAE state
       switch(port->authPaeState)
@@ -295,7 +295,7 @@ error_t ieee8021PaeMibGetDot1xAuthConfigEntry(const MibObject *object, const uin
       }
    }
    //dot1xAuthBackendAuthState object?
-   else if(!strcmp(object->name, "dot1xAuthBackendAuthState"))
+   else if(osStrcmp(object->name, "dot1xAuthBackendAuthState") == 0)
    {
       //This object indicates the current value of the backend authentication
       //state machine
@@ -331,21 +331,21 @@ error_t ieee8021PaeMibGetDot1xAuthConfigEntry(const MibObject *object, const uin
       }
    }
    //dot1xAuthAdminControlledDirections object?
-   else if(!strcmp(object->name, "dot1xAuthAdminControlledDirections"))
+   else if(osStrcmp(object->name, "dot1xAuthAdminControlledDirections") == 0)
    {
       //This object indicates the current value of the administrative
       //controlled directions parameter for the port
       value->integer = IEEE8021_PAE_MIB_CONTROL_DIR_BOTH;
    }
    //dot1xAuthOperControlledDirections object?
-   else if(!strcmp(object->name, "dot1xAuthOperControlledDirections"))
+   else if(osStrcmp(object->name, "dot1xAuthOperControlledDirections") == 0)
    {
       //This object indicates the current value of the operational controlled
       //directions parameter for the port
       value->integer = IEEE8021_PAE_MIB_CONTROL_DIR_BOTH;
    }
    //dot1xAuthAuthControlledPortStatus object?
-   else if(!strcmp(object->name, "dot1xAuthAuthControlledPortStatus"))
+   else if(osStrcmp(object->name, "dot1xAuthAuthControlledPortStatus") == 0)
    {
       //This object indicates the current value of the controlled port status
       //parameter for the port
@@ -363,7 +363,7 @@ error_t ieee8021PaeMibGetDot1xAuthConfigEntry(const MibObject *object, const uin
       }
    }
    //dot1xAuthAuthControlledPortControl object?
-   else if(!strcmp(object->name, "dot1xAuthAuthControlledPortControl"))
+   else if(osStrcmp(object->name, "dot1xAuthAuthControlledPortControl") == 0)
    {
       //This object indicates the current value of the controlled port control
       //parameter for the port
@@ -384,28 +384,28 @@ error_t ieee8021PaeMibGetDot1xAuthConfigEntry(const MibObject *object, const uin
       }
    }
    //dot1xAuthQuietPeriod object?
-   else if(!strcmp(object->name, "dot1xAuthQuietPeriod"))
+   else if(osStrcmp(object->name, "dot1xAuthQuietPeriod") == 0)
    {
       //This object indicates the value, in seconds, of the quietPeriod constant
       //currently in use by the authenticator PAE state machine
       value->unsigned32 = port->quietPeriod;
    }
    //dot1xAuthServerTimeout object?
-   else if(!strcmp(object->name, "dot1xAuthServerTimeout"))
+   else if(osStrcmp(object->name, "dot1xAuthServerTimeout") == 0)
    {
       //This object indicates The value, in seconds, of the serverTimeout
       //constant currently in use by the backend authentication state machine
       value->unsigned32 = port->serverTimeout;
    }
    //dot1xAuthReAuthPeriod object?
-   else if(!strcmp(object->name, "dot1xAuthReAuthPeriod"))
+   else if(osStrcmp(object->name, "dot1xAuthReAuthPeriod") == 0)
    {
       //This object indicates the value, in seconds, of the reAuthPeriod
       //constant currently in use by the reauthentication timer state machine
       value->unsigned32 = port->reAuthPeriod;
    }
    //dot1xAuthReAuthEnabled object?
-   else if(!strcmp(object->name, "dot1xAuthReAuthEnabled"))
+   else if(osStrcmp(object->name, "dot1xAuthReAuthEnabled") == 0)
    {
       //This object indicates the enable/disable control used by the
       //reauthentication timer state machine
@@ -419,7 +419,7 @@ error_t ieee8021PaeMibGetDot1xAuthConfigEntry(const MibObject *object, const uin
       }
    }
    //dot1xAuthKeyTxEnabled object?
-   else if(!strcmp(object->name, "dot1xAuthKeyTxEnabled"))
+   else if(osStrcmp(object->name, "dot1xAuthKeyTxEnabled") == 0)
    {
       //This object indicates the value of the keyTransmissionEnabled constant
       //currently in use by the authenticator PAE state machine
@@ -575,84 +575,84 @@ error_t ieee8021PaeMibGetDot1xAuthStatsEntry(const MibObject *object, const uint
    port = &context->ports[dot1xPaePortNumber - 1];
 
    //dot1xAuthEapolFramesRx object?
-   if(!strcmp(object->name, "dot1xAuthEapolFramesRx"))
+   if(osStrcmp(object->name, "dot1xAuthEapolFramesRx") == 0)
    {
       //Number of valid EAPOL frames of any type that have been received by this
       //authenticator
       value->counter32 = port->stats.eapolFramesRx;
    }
    //dot1xAuthEapolFramesTx object?
-   else if(!strcmp(object->name, "dot1xAuthEapolFramesTx"))
+   else if(osStrcmp(object->name, "dot1xAuthEapolFramesTx") == 0)
    {
       //Number of EAPOL frames of any type that have been transmitted by this
       //authenticator
       value->counter32 = port->stats.eapolFramesTx;
    }
    //dot1xAuthEapolStartFramesRx object?
-   else if(!strcmp(object->name, "dot1xAuthEapolStartFramesRx"))
+   else if(osStrcmp(object->name, "dot1xAuthEapolStartFramesRx") == 0)
    {
       //Number of EAPOL Start frames that have been received by this
       //authenticator
       value->counter32 = port->stats.eapolStartFramesRx;
    }
    //dot1xAuthEapolLogoffFramesRx object?
-   else if(!strcmp(object->name, "dot1xAuthEapolLogoffFramesRx"))
+   else if(osStrcmp(object->name, "dot1xAuthEapolLogoffFramesRx") == 0)
    {
       //Number of EAPOL Logoff frames that have been received by this
       //authenticator
       value->counter32 = port->stats.eapolLogoffFramesRx;
    }
    //dot1xAuthEapolRespIdFramesRx object?
-   else if(!strcmp(object->name, "dot1xAuthEapolRespIdFramesRx"))
+   else if(osStrcmp(object->name, "dot1xAuthEapolRespIdFramesRx") == 0)
    {
       //Number of EAP Resp/Id frames that have been received by this
       //authenticator
       value->counter32 = port->stats.eapolRespIdFramesRx;
    }
    //dot1xAuthEapolRespFramesRx object?
-   else if(!strcmp(object->name, "dot1xAuthEapolRespFramesRx"))
+   else if(osStrcmp(object->name, "dot1xAuthEapolRespFramesRx") == 0)
    {
       //Number of valid EAP Response frames (other than Resp/Id frames) that
       //have been received by this authenticator
       value->counter32 = port->stats.eapolRespFramesRx;
    }
    //dot1xAuthEapolReqIdFramesTx object?
-   else if(!strcmp(object->name, "dot1xAuthEapolReqIdFramesTx"))
+   else if(osStrcmp(object->name, "dot1xAuthEapolReqIdFramesTx") == 0)
    {
       //Number of EAP Req/Id frames that have been transmitted by this
       //authenticator
       value->counter32 = port->stats.eapolReqIdFramesTx;
    }
    //dot1xAuthEapolReqFramesTx object?
-   else if(!strcmp(object->name, "dot1xAuthEapolReqFramesTx"))
+   else if(osStrcmp(object->name, "dot1xAuthEapolReqFramesTx") == 0)
    {
       //Number of EAP Request frames (other than Rq/Id frames) that have been
       //transmitted by this authenticator
       value->counter32 = port->stats.eapolReqFramesTx;
    }
    //dot1xAuthInvalidEapolFramesRx object?
-   else if(!strcmp(object->name, "dot1xAuthInvalidEapolFramesRx"))
+   else if(osStrcmp(object->name, "dot1xAuthInvalidEapolFramesRx") == 0)
    {
       //Number of EAPOL frames that have been received by this authenticator
       //in which the frame type is not recognized
       value->counter32 = port->stats.invalidEapolFramesRx;
    }
    //dot1xAuthEapLengthErrorFramesRx object?
-   else if(!strcmp(object->name, "dot1xAuthEapLengthErrorFramesRx"))
+   else if(osStrcmp(object->name, "dot1xAuthEapLengthErrorFramesRx") == 0)
    {
       //Number of EAPOL frames that have been received by this authenticator
       //in which the Packet Body Length field is invalid
       value->counter32 = port->stats.eapLengthErrorFramesRx;
    }
    //dot1xAuthLastEapolFrameVersion object?
-   else if(!strcmp(object->name, "dot1xAuthLastEapolFrameVersion"))
+   else if(osStrcmp(object->name, "dot1xAuthLastEapolFrameVersion") == 0)
    {
       //Protocol version number carried in the most recently received EAPOL
       //frame
       value->unsigned32 = port->stats.lastEapolFrameVersion;
    }
    //dot1xAuthLastEapolFrameSource object?
-   else if(!strcmp(object->name, "dot1xAuthLastEapolFrameSource"))
+   else if(osStrcmp(object->name, "dot1xAuthLastEapolFrameSource") == 0)
    {
       //This object contains the source MAC address carried in the most
       //recently received EAPOL frame
@@ -812,52 +812,52 @@ error_t ieee8021PaeMibGetDot1xAuthSessionStatsEntry(const MibObject *object, con
    port = &context->ports[dot1xPaePortNumber - 1];
 
    //dot1xAuthSessionOctetsRx object?
-   if(!strcmp(object->name, "dot1xAuthSessionOctetsRx"))
+   if(osStrcmp(object->name, "dot1xAuthSessionOctetsRx") == 0)
    {
       //Number of octets received in user data frames on this port during the
       //session
       value->counter64 = port->sessionStats.sessionOctetsRx;
    }
    //dot1xAuthSessionOctetsTx object?
-   else if(!strcmp(object->name, "dot1xAuthSessionOctetsTx"))
+   else if(osStrcmp(object->name, "dot1xAuthSessionOctetsTx") == 0)
    {
       //Number of octets transmitted in user data frames on this port during
       //the session
       value->counter64 = port->sessionStats.sessionOctetsTx;
    }
    //dot1xAuthSessionFramesRx object?
-   else if(!strcmp(object->name, "dot1xAuthSessionFramesRx"))
+   else if(osStrcmp(object->name, "dot1xAuthSessionFramesRx") == 0)
    {
       //Number of user data frames received on this port during the session
       value->counter32 = port->sessionStats.sessionFramesRx;
    }
    //dot1xAuthSessionFramesTx object?
-   else if(!strcmp(object->name, "dot1xAuthSessionFramesTx"))
+   else if(osStrcmp(object->name, "dot1xAuthSessionFramesTx") == 0)
    {
       //Number of user data frames transmitted on this port during the session
       value->counter32 = port->sessionStats.sessionFramesTx;
    }
    //dot1xAuthSessionId object?
-   else if(!strcmp(object->name, "dot1xAuthSessionId"))
+   else if(osStrcmp(object->name, "dot1xAuthSessionId") == 0)
    {
       //A unique identifier for the session, in the form of a printable ASCII
       //string of at least three characters
       *valueLen = 0;
    }
    //dot1xAuthSessionAuthenticMethod object?
-   else if(!strcmp(object->name, "dot1xAuthSessionAuthenticMethod"))
+   else if(osStrcmp(object->name, "dot1xAuthSessionAuthenticMethod") == 0)
    {
       //Authentication method used to establish the session
       value->integer = IEEE8021_PAE_MIB_AUTH_METHOD_REMOTE_AUTH_SERVER;
    }
    //dot1xAuthSessionTime object?
-   else if(!strcmp(object->name, "dot1xAuthSessionTime"))
+   else if(osStrcmp(object->name, "dot1xAuthSessionTime") == 0)
    {
       //Duration of the session in seconds
       value->timeTicks = port->sessionStats.sessionTime * 100;
    }
    //dot1xAuthSessionTerminateCause object?
-   else if(!strcmp(object->name, "dot1xAuthSessionTerminateCause"))
+   else if(osStrcmp(object->name, "dot1xAuthSessionTerminateCause") == 0)
    {
       //Reason for the session termination
       switch(port->sessionStats.sessionTerminateCause)
@@ -892,7 +892,7 @@ error_t ieee8021PaeMibGetDot1xAuthSessionStatsEntry(const MibObject *object, con
       }
    }
    //dot1xAuthSessionUserName object?
-   else if(!strcmp(object->name, "dot1xAuthSessionUserName"))
+   else if(osStrcmp(object->name, "dot1xAuthSessionUserName") == 0)
    {
       //Retrieve the length of the user name
       n = osStrlen(port->aaaIdentity);

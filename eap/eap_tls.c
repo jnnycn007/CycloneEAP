@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.2
+ * @version 2.4.4
  **/
 
 //Switch to the appropriate trace level
@@ -93,8 +93,8 @@ void eapTlsProcessRequest(SupplicantContext *context,
       context->rxBufferPos = 0;
       context->rxBufferLen = 0;
 
-      //Release TLS context
-      eapCloseTls(context);
+      //Abort previous TLS session, if any
+      eapCloseTls(context, ERROR_CONNECTION_RESET);
 
       //The S flag is set only within the EAP-TLS start message sent from the
       //EAP server to the peer (refer to RFC 5216, section 2.1.5)
@@ -220,8 +220,8 @@ void eapTlsProcessRequest(SupplicantContext *context,
          context->decision = EAP_DECISION_FAIL;
       }
 
-      //Release TLS context
-      eapCloseTls(context);
+      //Close TLS session
+      eapCloseTls(context, error);
    }
 }
 
@@ -324,7 +324,7 @@ void eapTlsBuildResponse(SupplicantContext *context)
 
 
 /**
- * @brief Initialize TLS context
+ * @brief Open TLS session
  * @param[in] context Pointer to the 802.1X supplicant context
  * @return Error code
  **/
@@ -375,15 +375,24 @@ error_t eapOpenTls(SupplicantContext *context)
 
 
 /**
- * @brief Release TLS context
+ * @brief Close TLS session
  * @param[in] context Pointer to the 802.1X supplicant context
+ * @param[in] error Status code describing the reason for closing the TLS
+ *   session
  **/
 
-void eapCloseTls(SupplicantContext *context)
+void eapCloseTls(SupplicantContext *context, error_t error)
 {
-   //Release TLS context
+   //Valid TLS context?
    if(context->tlsContext != NULL)
    {
+      //Invoke user-defined callback, if any
+      if(context->tlsCompleteCallback != NULL)
+      {
+         context->tlsCompleteCallback(context, context->tlsContext, error);
+      }
+
+      //Release TLS context
       tlsFree(context->tlsContext);
       context->tlsContext = NULL;
    }

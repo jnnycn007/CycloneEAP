@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.2
+ * @version 2.4.4
  **/
 
 //Switch to the appropriate trace level
@@ -149,7 +149,7 @@ error_t ieee8021PaeMibSetDot1xPaePortEntry(const MibObject *object, const uint8_
       return ERROR_INSTANCE_NOT_FOUND;
 
    //dot1xPaePortInitialize object?
-   if(!strcmp(object->name, "dot1xPaePortInitialize"))
+   if(osStrcmp(object->name, "dot1xPaePortInitialize") == 0)
    {
       //Initialization control for this port
       if(value->integer == MIB_TRUTH_VALUE_TRUE)
@@ -170,7 +170,7 @@ error_t ieee8021PaeMibSetDot1xPaePortEntry(const MibObject *object, const uint8_
       }
    }
    //dot1xPaePortReauthenticate object?
-   else if(!strcmp(object->name, "dot1xPaePortReauthenticate"))
+   else if(osStrcmp(object->name, "dot1xPaePortReauthenticate") == 0)
    {
       //Reauthentication control for this port
       if(value->integer == MIB_TRUTH_VALUE_TRUE)
@@ -238,13 +238,13 @@ error_t ieee8021PaeMibGetDot1xPaePortEntry(const MibObject *object, const uint8_
       return ERROR_INSTANCE_NOT_FOUND;
 
    //dot1xPaePortProtocolVersion object?
-   if(!strcmp(object->name, "dot1xPaePortProtocolVersion"))
+   if(osStrcmp(object->name, "dot1xPaePortProtocolVersion") == 0)
    {
       //This object indicates the protocol version associated with this port
       value->unsigned32 = EAPOL_VERSION_2;
    }
    //dot1xPaePortCapabilities object?
-   else if(!strcmp(object->name, "dot1xPaePortCapabilities"))
+   else if(osStrcmp(object->name, "dot1xPaePortCapabilities") == 0)
    {
       //This object  indicates the PAE functionality that this port supports
       //and that may be managed through this MIB
@@ -253,13 +253,13 @@ error_t ieee8021PaeMibGetDot1xPaePortEntry(const MibObject *object, const uint8_
       *valueLen = sizeof(uint8_t);
    }
    //dot1xPaePortInitialize object?
-   else if(!strcmp(object->name, "dot1xPaePortInitialize"))
+   else if(osStrcmp(object->name, "dot1xPaePortInitialize") == 0)
    {
       //The attribute value reverts to FALSE once initialization has completed
       value->integer = 0;
    }
    //dot1xPaePortReauthenticate object?
-   else if(!strcmp(object->name, "dot1xPaePortReauthenticate"))
+   else if(osStrcmp(object->name, "dot1xPaePortReauthenticate") == 0)
    {
       //This attribute always returns FALSE when it is read
       value->integer = 0;

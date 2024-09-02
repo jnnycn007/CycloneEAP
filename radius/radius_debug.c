@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.2
+ * @version 2.4.4
  **/
 
 //Switch to the appropriate trace level
@@ -320,15 +320,15 @@ void radiusDumpAttribute(const RadiusAttribute *attribute)
          arraysize(radiusAttrTypeList));
 
       //Display the name of the current RADIUS attribute
-      if(!osStrcmp(typeName, "Unknown"))
-      {
-         TRACE_DEBUG("  Attribute %" PRIu8 " (%" PRIu8 " bytes)\r\n",
-            attribute->type, length);
-      }
-      else
+      if(osStrcmp(typeName, "Unknown") != 0)
       {
          TRACE_DEBUG("  %s Attribute (%" PRIu8 " bytes)\r\n", typeName,
             length);
+      }
+      else
+      {
+         TRACE_DEBUG("  Attribute %" PRIu8 " (%" PRIu8 " bytes)\r\n",
+            attribute->type, length);
       }
 
       //Check attribute type

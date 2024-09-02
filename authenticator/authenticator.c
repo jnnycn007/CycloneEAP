@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.2
+ * @version 2.4.4
  **/
 
 //Switch to the appropriate trace level
@@ -1014,6 +1014,7 @@ error_t authenticatorStop(AuthenticatorContext *context)
    //Check whether the authenticator is running
    if(context->running)
    {
+#if (NET_RTOS_SUPPORT == ENABLED)
       //Stop the authenticator
       context->stop = TRUE;
       //Send a signal to the task to abort any blocking operation
@@ -1024,6 +1025,7 @@ error_t authenticatorStop(AuthenticatorContext *context)
       {
          osDelayTask(1);
       }
+#endif
 
       //Remove the PAE group address from the static MAC table
       authenticatorDropPaeGroupAddr(context);

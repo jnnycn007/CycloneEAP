@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.2
+ * @version 2.4.4
  **/
 
 #ifndef _EAP_TLS_H
@@ -63,7 +63,7 @@ void eapTlsProcessRequest(SupplicantContext *context,
 void eapTlsBuildResponse(SupplicantContext *context);
 
 error_t eapOpenTls(SupplicantContext *context);
-void eapCloseTls(SupplicantContext *context);
+void eapCloseTls(SupplicantContext *context, error_t error);
 
 error_t eapTlsSendCallback(void *handle, const void *data, size_t length,
    size_t *written, uint_t flags);

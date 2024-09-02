@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.2
+ * @version 2.4.4
  **/
 
 //Switch to the appropriate trace level
@@ -61,7 +61,6 @@ void supplicantInitFsm(SupplicantContext *context)
    context->initialize = FALSE;
    context->keyDone = FALSE;
    context->keyRun = FALSE;
-   context->portControl = SUPPLICANT_PORT_MODE_AUTO;
    context->portEnabled = FALSE;
    context->portValid = TRUE;
    context->suppAbort = FALSE;
@@ -75,17 +74,10 @@ void supplicantInitFsm(SupplicantContext *context)
    context->logoffSent = FALSE;
    context->sPortMode = SUPPLICANT_PORT_MODE_FORCE_UNAUTH;
    context->startCount = 0;
-   context->userLogoff = FALSE;
-
-   context->heldPeriod = SUPPLICANT_DEFAULT_HELD_PERIOD;
-   context->startPeriod = SUPPLICANT_DEFAULT_START_PERIOD;
-   context->maxStart = SUPPLICANT_DEFAULT_MAX_START;
 
    context->eapNoResp = FALSE;
    context->eapReq = FALSE;
    context->eapResp = FALSE;
-
-   context->authPeriod = SUPPLICANT_DEFAULT_AUTH_PERIOD;
 
    context->allowNotifications = TRUE;
    context->eapReqData = context->rxBuffer + sizeof(EapolPdu);
@@ -97,7 +89,6 @@ void supplicantInitFsm(SupplicantContext *context)
    context->eapRespDataLen = 0;
    context->eapKeyData = NULL;
    context->eapKeyAvailable = FALSE;
-   context->clientTimeout = EAP_DEFAULT_CLIENT_TIMEOUT;
 
    context->selectedMethod = EAP_METHOD_TYPE_NONE;
    context->methodState = EAP_METHOD_STATE_NONE;
