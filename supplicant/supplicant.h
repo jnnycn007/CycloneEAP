@@ -6,7 +6,7 @@
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  *
- * Copyright (C) 2022-2024 Oryx Embedded SARL. All rights reserved.
+ * Copyright (C) 2022-2025 Oryx Embedded SARL. All rights reserved.
  *
  * This file is part of CycloneEAP Open.
  *
@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.4
+ * @version 2.5.0
  **/
 
 #ifndef _SUPPLICANT_H
@@ -211,109 +211,109 @@ typedef struct
 
 struct _SupplicantContext
 {
-   bool_t running;                               ///<Operational state of the supplicant
-   bool_t stop;                                  ///<Stop request
-   OsMutex mutex;                                ///<Mutex preventing simultaneous access to 802.1X supplicant context
-   OsEvent event;                                ///<Event object used to poll the underlying socket
-   OsTaskParameters taskParams;                  ///<Task parameters
-   OsTaskId taskId;                              ///<Task identifier
-   NetInterface *interface;                      ///<Underlying network interface
-   uint_t portIndex;                             ///<Port index
-   Socket *socket;                               ///<Underlying socket
-   char_t username[SUPPLICANT_MAX_USERNAME_LEN]; ///<User name
+   bool_t running;                                   ///<Operational state of the supplicant
+   bool_t stop;                                      ///<Stop request
+   OsMutex mutex;                                    ///<Mutex preventing simultaneous access to 802.1X supplicant context
+   OsEvent event;                                    ///<Event object used to poll the underlying socket
+   OsTaskParameters taskParams;                      ///<Task parameters
+   OsTaskId taskId;                                  ///<Task identifier
+   NetInterface *interface;                          ///<Underlying network interface
+   uint_t portIndex;                                 ///<Port index
+   Socket *socket;                                   ///<Underlying socket
+   char_t username[SUPPLICANT_MAX_USERNAME_LEN + 1]; ///<User name
 #if (EAP_MD5_SUPPORT == ENABLED)
-   char_t password[SUPPLICANT_MAX_PASSWORD_LEN]; ///<Password
-   uint8_t digest[MD5_DIGEST_SIZE];              ///<Calculated hash value
+   char_t password[SUPPLICANT_MAX_PASSWORD_LEN + 1]; ///<Password
+   uint8_t digest[MD5_DIGEST_SIZE];                  ///<Calculated hash value
 #endif
 #if (EAP_TLS_SUPPORT == ENABLED)
-   TlsContext *tlsContext;                       ///<TLS context
-   TlsSessionState tlsSession;                   ///<TLS session state
-   SupplicantTlsInitCallback tlsInitCallback;    ///<TLS negotiation initialization callback function
+   TlsContext *tlsContext;                           ///<TLS context
+   TlsSessionState tlsSession;                       ///<TLS session state
+   SupplicantTlsInitCallback tlsInitCallback;        ///<TLS negotiation initialization callback function
    SupplicantTlsCompleteCallback tlsCompleteCallback;               ///<TLS negotiation completion callback function
 #endif
    SupplicantPaeStateChangeCallback paeStateChangeCallback;         ///<Supplicant PAE state change callback function
    SupplicantBackendStateChangeCallback backendStateChangeCallback; ///<Supplicant backend state change callback function
    EapPeerStateChangeCallback eapPeerStateChangeCallback;           ///<EAP peer state change callback function
-   SupplicantTickCallback tickCallback;          ///<Tick callback function
-   systime_t timestamp;                          ///<Timestamp to manage timeout
+   SupplicantTickCallback tickCallback;              ///<Tick callback function
+   systime_t timestamp;                              ///<Timestamp to manage timeout
 
-   uint8_t txBuffer[SUPPLICANT_TX_BUFFER_SIZE];  ///<Transmission buffer
+   uint8_t txBuffer[SUPPLICANT_TX_BUFFER_SIZE];      ///<Transmission buffer
    size_t txBufferWritePos;
    size_t txBufferReadPos;
    size_t txBufferLen;
-   uint8_t rxBuffer[SUPPLICANT_TX_BUFFER_SIZE];  ///<Reception buffer
+   uint8_t rxBuffer[SUPPLICANT_RX_BUFFER_SIZE];      ///<Reception buffer
    size_t rxBufferPos;
    size_t rxBufferLen;
 
-   SupplicantPaeState suppPaeState;              ///<Supplicant PAE state
-   SupplicantBackendState suppBackendState;      ///<Supplicant backend state
+   SupplicantPaeState suppPaeState;                  ///<Supplicant PAE state
+   SupplicantBackendState suppBackendState;          ///<Supplicant backend state
 
-   uint_t authWhile;                             ///<Timer used by the supplicant backend state machine (8.2.2.1 a)
-   uint_t heldWhile;                             ///<Timer used by the supplicant PAE state machine (8.2.2.1 c)
-   uint_t startWhen;                             ///<Timer used by the supplicant PAE state machine (8.2.2.1 f)
+   uint_t authWhile;                                 ///<Timer used by the supplicant backend state machine (8.2.2.1 a)
+   uint_t heldWhile;                                 ///<Timer used by the supplicant PAE state machine (8.2.2.1 c)
+   uint_t startWhen;                                 ///<Timer used by the supplicant PAE state machine (8.2.2.1 f)
 
-   bool_t eapFail;                               ///<The authentication has failed (8.2.2.2 g)
-   bool_t eapolEap;                              ///<EAPOL PDU carrying a packet Type of EAP-Packet is received (8.2.2.2 h)
-   bool_t eapSuccess;                            ///<The authentication process succeeds (8.2.2.2 i)
-   bool_t initialize;                            ///<Forces all EAPOL state machines to their initial state (8.2.2.2 k)
-   bool_t keyDone;                               ///<Variable set by the key machine (8.2.2.2 m)
-   bool_t keyRun;                                ///<Variable set by the PACP machine (8.2.2.2 n)
-   SupplicantPortMode portControl;               ///<Port control (8.2.2.2 p)
-   bool_t portEnabled;                           ///<Operational state of the port (8.2.2.2 q)
-   bool_t portValid;                             ///<The value of this variable is set externally (8.2.2.2 s)
-   bool_t suppAbort;                             ///<Aborts an authentication sequence (8.2.2.2 u)
-   bool_t suppFail;                              ///<Unsuccessful authentication sequence (8.2.2.2 v)
-   SupplicantPortStatus suppPortStatus;          ///<Current authorization state of the supplicant PAE state machine (8.2.2.2 w)
-   bool_t suppStart;                             ///<Start an authentication sequence (8.2.2.2 x)
-   bool_t suppSuccess;                           ///<Successful authentication sequence (8.2.2.2 y)
-   bool_t suppTimeout;                           ///<The authentication sequence has timed out (8.2.2.2 z)
+   bool_t eapFail;                                   ///<The authentication has failed (8.2.2.2 g)
+   bool_t eapolEap;                                  ///<EAPOL PDU carrying a packet Type of EAP-Packet is received (8.2.2.2 h)
+   bool_t eapSuccess;                                ///<The authentication process succeeds (8.2.2.2 i)
+   bool_t initialize;                                ///<Forces all EAPOL state machines to their initial state (8.2.2.2 k)
+   bool_t keyDone;                                   ///<Variable set by the key machine (8.2.2.2 m)
+   bool_t keyRun;                                    ///<Variable set by the PACP machine (8.2.2.2 n)
+   SupplicantPortMode portControl;                   ///<Port control (8.2.2.2 p)
+   bool_t portEnabled;                               ///<Operational state of the port (8.2.2.2 q)
+   bool_t portValid;                                 ///<The value of this variable is set externally (8.2.2.2 s)
+   bool_t suppAbort;                                 ///<Aborts an authentication sequence (8.2.2.2 u)
+   bool_t suppFail;                                  ///<Unsuccessful authentication sequence (8.2.2.2 v)
+   SupplicantPortStatus suppPortStatus;              ///<Current authorization state of the supplicant PAE state machine (8.2.2.2 w)
+   bool_t suppStart;                                 ///<Start an authentication sequence (8.2.2.2 x)
+   bool_t suppSuccess;                               ///<Successful authentication sequence (8.2.2.2 y)
+   bool_t suppTimeout;                               ///<The authentication sequence has timed out (8.2.2.2 z)
 
-   bool_t eapRestart;                            ///<The higher layer is ready to establish an authentication session (8.2.11.1.1 a)
-   bool_t logoffSent;                            ///<An EAPOL-Logoff message has been sent (8.2.11.1.1 b)
-   SupplicantPortMode sPortMode;                 ///<Used to switch between the auto and non-auto modes of operation (8.2.11.1.1 c)
-   uint_t startCount;                            ///<Number of EAPOL-Start messages that have been sent (8.2.11.1.1 d)
-   bool_t userLogoff;                            ///<The user is logged off (8.2.11.1.1 e)
+   bool_t eapRestart;                                ///<The higher layer is ready to establish an authentication session (8.2.11.1.1 a)
+   bool_t logoffSent;                                ///<An EAPOL-Logoff message has been sent (8.2.11.1.1 b)
+   SupplicantPortMode sPortMode;                     ///<Used to switch between the auto and non-auto modes of operation (8.2.11.1.1 c)
+   uint_t startCount;                                ///<Number of EAPOL-Start messages that have been sent (8.2.11.1.1 d)
+   bool_t userLogoff;                                ///<The user is logged off (8.2.11.1.1 e)
 
-   uint_t heldPeriod;                            ///<Initialization value used for the heldWhile timer (8.2.11.1.2 a)
-   uint_t startPeriod;                           ///<Initialization value used for the startWhen timer (8.2.11.1.2 b)
-   uint_t maxStart;                              ///<Maximum number of successive EAPOL-Start messages that will be sent (8.2.11.1.2 c)
+   uint_t heldPeriod;                                ///<Initialization value used for the heldWhile timer (8.2.11.1.2 a)
+   uint_t startPeriod;                               ///<Initialization value used for the startWhen timer (8.2.11.1.2 b)
+   uint_t maxStart;                                  ///<Maximum number of successive EAPOL-Start messages that will be sent (8.2.11.1.2 c)
 
-   bool_t eapNoResp;                             ///<No EAP Response for the last EAP frame delivered to EAP (8.2.12.1.1 a)
-   bool_t eapReq;                                ///<An EAP frame is available for processing by EAP (8.2.12.1.1 b)
-   bool_t eapResp;                               ///<An EAP frame available for transmission to authenticator (8.2.12.1.1 c)
+   bool_t eapNoResp;                                 ///<No EAP Response for the last EAP frame delivered to EAP (8.2.12.1.1 a)
+   bool_t eapReq;                                    ///<An EAP frame is available for processing by EAP (8.2.12.1.1 b)
+   bool_t eapResp;                                   ///<An EAP frame available for transmission to authenticator (8.2.12.1.1 c)
 
-   uint_t authPeriod;                            ///<Initialization value used for the authWhile timer (8.2.12.1.2 a)
+   uint_t authPeriod;                                ///<Initialization value used for the authWhile timer (8.2.12.1.2 a)
 
-   EapPeerState eapPeerState;                    ///<EAP peer state
+   EapPeerState eapPeerState;                        ///<EAP peer state
 
    bool_t allowNotifications;
-   const uint8_t *eapReqData;                    ///<Contents of the EAP request (4.1.1)
-   size_t eapReqDataLen;                         ///<Length of the EAP request
-   uint_t idleWhile;                             ///<Timer (4.1.1)
-   bool_t altAccept;                             ///<Alternate indication of success (4.1.1)
-   bool_t altReject;                             ///<Alternate indication of failure (4.1.1)
-   uint8_t *eapRespData;                         ///<EAP response to send (4.1.2)
-   size_t eapRespDataLen;                        ///<Length of the EAP response
-   uint8_t *eapKeyData;                          ///<EAP key (4.1.2)
-   bool_t eapKeyAvailable;                       ///<Keying material is available (4.1.2)
-   uint_t clientTimeout;                         ///<Time to wait for a valid request before aborting (4.1.3)
+   const uint8_t *eapReqData;                        ///<Contents of the EAP request (4.1.1)
+   size_t eapReqDataLen;                             ///<Length of the EAP request
+   uint_t idleWhile;                                 ///<Timer (4.1.1)
+   bool_t altAccept;                                 ///<Alternate indication of success (4.1.1)
+   bool_t altReject;                                 ///<Alternate indication of failure (4.1.1)
+   uint8_t *eapRespData;                             ///<EAP response to send (4.1.2)
+   size_t eapRespDataLen;                            ///<Length of the EAP response
+   uint8_t *eapKeyData;                              ///<EAP key (4.1.2)
+   bool_t eapKeyAvailable;                           ///<Keying material is available (4.1.2)
+   uint_t clientTimeout;                             ///<Time to wait for a valid request before aborting (4.1.3)
 
-   EapMethodType selectedMethod;                 ///<The method currently in progress (4.3.1)
-   EapMethodState methodState;                   ///<Method state (4.3.1)
-   uint_t lastId;                                ///<EAP identifier value of the last request (4.3.1)
-   uint8_t *lastRespData;                        ///<Last EAP packet sent from the peer (4.3.1)
-   size_t lastRespDataLen;                       ///<Length of the last EAP response
-   EapDecision decision;                         ///<Decision (4.3.1)
+   EapMethodType selectedMethod;                     ///<The method currently in progress (4.3.1)
+   EapMethodState methodState;                       ///<Method state (4.3.1)
+   uint_t lastId;                                    ///<EAP identifier value of the last request (4.3.1)
+   uint8_t *lastRespData;                            ///<Last EAP packet sent from the peer (4.3.1)
+   size_t lastRespDataLen;                           ///<Length of the last EAP response
+   EapDecision decision;                             ///<Decision (4.3.1)
 
-   bool_t rxReq;                                 ///<The current received packet is an EAP Request (4.3.2)
-   bool_t rxSuccess;                             ///<The current received packet is an EAP Success (4.3.2)
-   bool_t rxFailure;                             ///<The current received packet is an EAP Failure (4.3.2)
-   uint_t reqId;                                 ///<Identifier value associated with the current EAP request (4.3.2)
-   EapMethodType reqMethod;                      ///<Method type of the current EAP request (4.3.2)
-   bool_t ignore;                                ///<Drop the current packet (4.3.2)
+   bool_t rxReq;                                     ///<The current received packet is an EAP Request (4.3.2)
+   bool_t rxSuccess;                                 ///<The current received packet is an EAP Success (4.3.2)
+   bool_t rxFailure;                                 ///<The current received packet is an EAP Failure (4.3.2)
+   uint_t reqId;                                     ///<Identifier value associated with the current EAP request (4.3.2)
+   EapMethodType reqMethod;                          ///<Method type of the current EAP request (4.3.2)
+   bool_t ignore;                                    ///<Drop the current packet (4.3.2)
 
-   bool_t allowCanned;                           ///<Allow canned EAP Success and Failure packets
-   bool_t busy;                                  ///<Busy flag
+   bool_t allowCanned;                               ///<Allow canned EAP Success and Failure packets
+   bool_t busy;                                      ///<Busy flag
 };
 
 

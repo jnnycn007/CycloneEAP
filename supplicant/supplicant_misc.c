@@ -6,7 +6,7 @@
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  *
- * Copyright (C) 2022-2024 Oryx Embedded SARL. All rights reserved.
+ * Copyright (C) 2022-2025 Oryx Embedded SARL. All rights reserved.
  *
  * This file is part of CycloneEAP Open.
  *
@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.4
+ * @version 2.5.0
  **/
 
 //Switch to the appropriate trace level
@@ -90,7 +90,8 @@ bool_t supplicantGetLinkState(SupplicantContext *context)
    interface = context->interface;
 
    //Valid switch driver?
-   if(context->portIndex != 0 && interface->switchDriver != NULL &&
+   if(context->portIndex != 0 && interface != NULL &&
+      interface->switchDriver != NULL &&
       interface->switchDriver->getLinkState != NULL)
    {
       //Get exclusive access
@@ -106,7 +107,7 @@ bool_t supplicantGetLinkState(SupplicantContext *context)
    else
    {
       //Retrieve the link state of the network interface
-      linkState = interface->linkState;
+      linkState = netGetLinkState(interface);
    }
 
    //Return link state
@@ -136,7 +137,8 @@ error_t supplicantAcceptPaeGroupAddr(SupplicantContext *context)
    osAcquireMutex(&netMutex);
 
    //Valid switch driver?
-   if(context->portIndex != 0 && interface->switchDriver != NULL &&
+   if(context->portIndex != 0 && interface != NULL &&
+      interface->switchDriver != NULL &&
       interface->switchDriver->addStaticFdbEntry != NULL)
    {
       //Format forwarding database entry
@@ -186,7 +188,8 @@ error_t supplicantDropPaeGroupAddr(SupplicantContext *context)
    osAcquireMutex(&netMutex);
 
    //Valid switch driver?
-   if(context->portIndex != 0 && interface->switchDriver != NULL &&
+   if(context->portIndex != 0 && interface != NULL &&
+      interface->switchDriver != NULL &&
       interface->switchDriver->deleteStaticFdbEntry != NULL)
    {
       //Format forwarding database entry
@@ -225,23 +228,13 @@ error_t supplicantDropPaeGroupAddr(SupplicantContext *context)
 error_t supplicantSendEapolPdu(SupplicantContext *context, const uint8_t *pdu,
    size_t length)
 {
+   error_t error;
    SocketMsg msg;
 
    //Point to the PDU to be transmitted
    msg = SOCKET_DEFAULT_MSG;
    msg.data = (uint8_t *) pdu;
    msg.length = length;
-
-   //The PAE group address is assigned specifically for use by EAPOL clients
-   //designed to maximize plug-and-play interoperability, and should be the
-   //default for those clients (refer to IEEE Std 802.1X-2010, section 11.1.1)
-   msg.destMacAddr = PAE_GROUP_ADDR;
-
-   //The source address for each MAC service request used to transmit an EAPOL
-   //MPDU shall be an individual address associated with the service access
-   //point at which the request is made (refer to IEEE Std 802.1X-2010,
-   //section 11.1.2)
-   netGetMacAddr(context->interface, &msg.srcMacAddr);
 
    //All EAPOL MPDUs shall be identified using the PAE EtherType (refer to
    //IEEE Std 802.1X-2010, section 11.1.4)
@@ -252,8 +245,26 @@ error_t supplicantSendEapolPdu(SupplicantContext *context, const uint8_t *pdu,
    msg.switchPort = context->portIndex;
 #endif
 
-   //Send EAPOL MPDU
-   return socketSendMsg(context->socket, &msg, 0);
+   //The PAE group address is assigned specifically for use by EAPOL clients
+   //designed to maximize plug-and-play interoperability, and should be the
+   //default for those clients (refer to IEEE Std 802.1X-2010, section 11.1.1)
+   msg.destMacAddr = PAE_GROUP_ADDR;
+
+   //The source address for each MAC service request used to transmit an EAPOL
+   //MPDU shall be an individual address associated with the service access
+   //point at which the request is made (refer to IEEE Std 802.1X-2010,
+   //section 11.1.2)
+   error = netGetMacAddr(context->interface, &msg.srcMacAddr);
+
+   //Check status code
+   if(!error)
+   {
+      //Send EAPOL MPDU
+      error = socketSendMsg(context->socket, &msg, 0);
+   }
+
+   //Return status code
+   return error;
 }
 
 
@@ -267,6 +278,7 @@ void supplicantProcessEapolPdu(SupplicantContext *context)
    error_t error;
    size_t length;
    SocketMsg msg;
+   MacAddr macAddr;
    EapolPdu *pdu;
 
    //Point to the receive buffer
@@ -276,7 +288,7 @@ void supplicantProcessEapolPdu(SupplicantContext *context)
 
    //Receive EAPOL MPDU
    error = socketReceiveMsg(context->socket, &msg, 0);
-   //Failed to receive packet
+   //Any error to report?
    if(error)
       return;
 
@@ -286,11 +298,17 @@ void supplicantProcessEapolPdu(SupplicantContext *context)
       return;
 #endif
 
+   //Get the MAC address assigned to the interface
+   error = netGetMacAddr(context->interface, &macAddr);
+   //Any error to report?
+   if(error)
+      return;
+
    //The destination MAC address field contains the PAE group address, or
    //the specific MAC address of the PAE (refer to IEEE Std 802.1X-2004,
    //section 7.5.7)
    if(!macCompAddr(&msg.destMacAddr, &PAE_GROUP_ADDR) &&
-      !macCompAddr(&msg.destMacAddr, &context->interface->macAddr))
+      !macCompAddr(&msg.destMacAddr, &macAddr))
    {
       return;
    }
@@ -311,13 +329,13 @@ void supplicantProcessEapolPdu(SupplicantContext *context)
    //Dump EAPOL header contents for debugging purpose
    eapolDumpHeader(pdu);
 
-   //Malformed EAPOL packet?
-   if(msg.length < ntohs(pdu->packetBodyLen))
-      return;
-
    //Any octets following the Packet Body field in the frame conveying the
    //EAPOL PDU shall be ignored (refer to IEEE Std 802.1X-2004, section 11.4)
    length = ntohs(pdu->packetBodyLen);
+
+   //Malformed EAPOL packet?
+   if(msg.length < (sizeof(EapolPdu) + length))
+      return;
 
    //Check packet type
    if(pdu->packetType == EAPOL_TYPE_EAP)

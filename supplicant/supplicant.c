@@ -6,7 +6,7 @@
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  *
- * Copyright (C) 2022-2024 Oryx Embedded SARL. All rights reserved.
+ * Copyright (C) 2022-2025 Oryx Embedded SARL. All rights reserved.
  *
  * This file is part of CycloneEAP Open.
  *
@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.4.4
+ * @version 2.5.0
  **/
 
 //Switch to the appropriate trace level
@@ -35,6 +35,7 @@
 #include "supplicant/supplicant.h"
 #include "supplicant/supplicant_fsm.h"
 #include "supplicant/supplicant_misc.h"
+#include "eap/eap_tls.h"
 #include "debug.h"
 
 //Check EAP library configuration
@@ -93,9 +94,6 @@ error_t supplicantInit(SupplicantContext *context,
 
    //Ensure the parameters are valid
    if(context == NULL || settings == NULL)
-      return ERROR_INVALID_PARAMETER;
-
-   if(settings->interface == NULL)
       return ERROR_INVALID_PARAMETER;
 
    //Clear supplicant context
@@ -591,6 +589,11 @@ error_t supplicantStop(SupplicantContext *context)
       {
          osDelayTask(1);
       }
+#endif
+
+#if (EAP_TLS_SUPPORT == ENABLED)
+      //Close TLS session
+      eapCloseTls(context, ERROR_SERVICE_CLOSING);
 #endif
 
       //Remove the PAE group address from the static MAC table
