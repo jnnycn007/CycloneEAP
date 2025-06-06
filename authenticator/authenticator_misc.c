@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.5.0
+ * @version 2.5.2
  **/
 
 //Switch to the appropriate trace level
@@ -546,7 +546,7 @@ error_t authenticatorBuildRadiusRequest(AuthenticatorPort *port)
 
    //The Request Authenticator value must be changed each time a new
    //Identifier is used (refer to RFC 2865, section 4.1)
-   error = context->prngAlgo->read(context->prngContext,
+   error = context->prngAlgo->generate(context->prngContext,
       port->reqAuthenticator, 16);
    //Any error to report?
    if(error)

@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.5.0
+ * @version 2.5.2
  **/
 
 //Switch to the appropriate trace level
@@ -158,7 +158,7 @@ void eapTlsProcessRequest(SupplicantContext *context,
             //When an EAP-TLS server has successfully processed the TLS client
             //Finished and sent its last handshake message (Finished or a
             //post-handshake message), it sends an encrypted TLS record with
-            //application data 0x00
+            //application data 0x00 (refer to RFC 9190, section 2.5)
             error = tlsRead(context->tlsContext, &data, sizeof(data), &n, 0);
 
             //Check status code

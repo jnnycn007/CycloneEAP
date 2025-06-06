@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.5.0
+ * @version 2.5.2
  **/
 
 //Switch to the appropriate trace level
@@ -125,41 +125,64 @@ error_t supplicantAcceptPaeGroupAddr(SupplicantContext *context)
 {
    error_t error;
    SwitchFdbEntry entry;
-   NetInterface *interface;
+   NetInterface *physicalInterface;
 
    //Initialize status code
    error = NO_ERROR;
 
-   //Point to the underlying network interface
-   interface = context->interface;
-
-   //Get exclusive access
-   osAcquireMutex(&netMutex);
-
-   //Valid switch driver?
-   if(context->portIndex != 0 && interface != NULL &&
-      interface->switchDriver != NULL &&
-      interface->switchDriver->addStaticFdbEntry != NULL)
+   //Valid interface?
+   if(context->interface != NULL)
    {
-      //Format forwarding database entry
-      entry.macAddr = PAE_GROUP_ADDR;
-      entry.srcPort = 0;
-      entry.destPorts = SWITCH_CPU_PORT_MASK;
-      entry.override = TRUE;
+      //Get exclusive access
+      osAcquireMutex(&netMutex);
 
-      //Update the static MAC table of the switch
-      error = interface->switchDriver->addStaticFdbEntry(interface, &entry);
+      //Point to the physical interface
+      physicalInterface = nicGetPhysicalInterface(context->interface);
+
+      //Valid switch driver?
+      if(context->portIndex != 0 &&
+         physicalInterface->switchDriver != NULL &&
+         physicalInterface->switchDriver->addStaticFdbEntry != NULL)
+      {
+         //Format forwarding database entry
+         entry.macAddr = PAE_GROUP_ADDR;
+         entry.srcPort = 0;
+         entry.destPorts = SWITCH_CPU_PORT_MASK;
+         entry.override = TRUE;
+
+         //Update the static MAC table of the switch
+         error = physicalInterface->switchDriver->addStaticFdbEntry(
+            physicalInterface, &entry);
+      }
+
+      //Check status code
+      if(!error)
+      {
+         //Add the PAE group address to the MAC filter table
+         error = ethAcceptMacAddr(context->interface, &PAE_GROUP_ADDR);
+      }
+
+      //Check status code
+      if(!error)
+      {
+         //Virtual interface?
+         if(context->interface != physicalInterface)
+         {
+            //Configure the physical interface to accept the MAC address
+            error = ethAcceptMacAddr(physicalInterface, &PAE_GROUP_ADDR);
+
+            //Any error to report?
+            if(error)
+            {
+               //Clean up side effects
+               ethDropMacAddr(context->interface, &PAE_GROUP_ADDR);
+            }
+         }
+      }
+
+      //Release exclusive access
+      osReleaseMutex(&netMutex);
    }
-
-   //Check status code
-   if(!error)
-   {
-      //Add the PAE group address to the MAC filter table
-      error = ethAcceptMacAddr(interface, &PAE_GROUP_ADDR);
-   }
-
-   //Release exclusive access
-   osReleaseMutex(&netMutex);
 
    //Return status code
    return error;
@@ -176,41 +199,54 @@ error_t supplicantDropPaeGroupAddr(SupplicantContext *context)
 {
    error_t error;
    SwitchFdbEntry entry;
-   NetInterface *interface;
+   NetInterface *physicalInterface;
 
    //Initialize status code
    error = NO_ERROR;
 
-   //Point to the underlying network interface
-   interface = context->interface;
-
-   //Get exclusive access
-   osAcquireMutex(&netMutex);
-
-   //Valid switch driver?
-   if(context->portIndex != 0 && interface != NULL &&
-      interface->switchDriver != NULL &&
-      interface->switchDriver->deleteStaticFdbEntry != NULL)
+   //Valid interface?
+   if(context->interface != NULL)
    {
-      //Format forwarding database entry
-      entry.macAddr = PAE_GROUP_ADDR;
-      entry.srcPort = 0;
-      entry.destPorts = 0;
-      entry.override = FALSE;
+      //Get exclusive access
+      osAcquireMutex(&netMutex);
 
-      //Update the static MAC table of the switch
-      error = interface->switchDriver->deleteStaticFdbEntry(interface, &entry);
+      //Point to the physical interface
+      physicalInterface = nicGetPhysicalInterface(context->interface);
+
+      //Valid switch driver?
+      if(context->portIndex != 0 &&
+         physicalInterface->switchDriver != NULL &&
+         physicalInterface->switchDriver->deleteStaticFdbEntry != NULL)
+      {
+         //Format forwarding database entry
+         entry.macAddr = PAE_GROUP_ADDR;
+         entry.srcPort = 0;
+         entry.destPorts = 0;
+         entry.override = FALSE;
+
+         //Update the static MAC table of the switch
+         error = physicalInterface->switchDriver->deleteStaticFdbEntry(
+            physicalInterface, &entry);
+      }
+
+      //Check status code
+      if(!error)
+      {
+         //Remove the PAE group address to the MAC filter table
+         ethDropMacAddr(context->interface, &PAE_GROUP_ADDR);
+
+         //Virtual interface?
+         if(context->interface != physicalInterface)
+         {
+            //Drop the corresponding address from the MAC filter table of the
+            //physical interface
+            ethDropMacAddr(physicalInterface, &PAE_GROUP_ADDR);
+         }
+      }
+
+      //Release exclusive access
+      osReleaseMutex(&netMutex);
    }
-
-   //Check status code
-   if(!error)
-   {
-      //Remove the PAE group address to the MAC filter table
-      ethDropMacAddr(interface, &PAE_GROUP_ADDR);
-   }
-
-   //Release exclusive access
-   osReleaseMutex(&netMutex);
 
    //Return status code
    return error;

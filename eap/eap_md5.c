@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.5.0
+ * @version 2.5.2
  **/
 
 //Switch to the appropriate trace level
@@ -88,7 +88,7 @@ void eapMd5ProcessRequest(SupplicantContext *context,
    //The method never continues at this point
    context->methodState = EAP_METHOD_STATE_DONE;
 
-   //we do not know what the server's decision is, but are willing to use the
+   //We do not know what the server's decision is, but are willing to use the
    //access if the server allows. In this case, set decision to COND_SUCC
    context->decision = EAP_DECISION_COND_SUCC;
 }
