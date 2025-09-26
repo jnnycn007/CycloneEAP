@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.5.2
+ * @version 2.5.4
  **/
 
 #ifndef _EAP_H
@@ -64,13 +64,13 @@
 #endif
 
 //Version string
-#define CYCLONE_EAP_VERSION_STRING "2.5.2"
+#define CYCLONE_EAP_VERSION_STRING "2.5.4"
 //Major version
 #define CYCLONE_EAP_MAJOR_VERSION 2
 //Minor version
 #define CYCLONE_EAP_MINOR_VERSION 5
 //Revision number
-#define CYCLONE_EAP_REV_NUMBER 2
+#define CYCLONE_EAP_REV_NUMBER 4
 
 //EAP support
 #ifndef EAP_SUPPORT
