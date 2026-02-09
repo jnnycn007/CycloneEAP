@@ -6,7 +6,7 @@
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  *
- * Copyright (C) 2022-2025 Oryx Embedded SARL. All rights reserved.
+ * Copyright (C) 2022-2026 Oryx Embedded SARL. All rights reserved.
  *
  * This file is part of CycloneEAP Open.
  *
@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.5.4
+ * @version 2.6.0
  **/
 
 #ifndef _AUTHENTICATOR_H
@@ -451,6 +451,7 @@ struct _AuthenticatorContext
    OsEvent event;                                       ///<Event object used to poll the sockets
    OsTaskParameters taskParams;                         ///<Task parameters
    OsTaskId taskId;                                     ///<Task identifier
+   NetContext *netContext;                              ///<TCP/IP stack context
    NetInterface *interface;                             ///<Underlying network interface
    uint_t numPorts;                                     ///<Number of ports
    AuthenticatorPort *ports;                            ///<Ports

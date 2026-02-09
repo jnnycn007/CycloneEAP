@@ -6,7 +6,7 @@
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  *
- * Copyright (C) 2022-2025 Oryx Embedded SARL. All rights reserved.
+ * Copyright (C) 2022-2026 Oryx Embedded SARL. All rights reserved.
  *
  * This file is part of CycloneEAP Open.
  *
@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.5.4
+ * @version 2.6.0
  **/
 
 //Switch to the appropriate trace level
@@ -127,7 +127,10 @@ error_t authenticatorInit(AuthenticatorContext *context,
    context->taskParams = settings->task;
    context->taskId = OS_INVALID_TASK_ID;
 
-   //Initialize authenticator context
+   //Attach TCP/IP stack context
+   context->netContext = settings->interface->netContext;
+
+   //Save user settings
    context->interface = settings->interface;
    context->numPorts = settings->numPorts;
    context->ports = settings->ports;
@@ -889,8 +892,8 @@ error_t authenticatorStart(AuthenticatorContext *context)
    do
    {
       //Open a UDP socket
-      context->serverSocket = socketOpen(SOCKET_TYPE_DGRAM,
-         SOCKET_IP_PROTO_UDP);
+      context->serverSocket = socketOpenEx(context->netContext,
+         SOCKET_TYPE_DGRAM, SOCKET_IP_PROTO_UDP);
       //Failed to open socket?
       if(context->serverSocket == NULL)
       {
@@ -913,7 +916,8 @@ error_t authenticatorStart(AuthenticatorContext *context)
          break;
 
       //Open a raw socket
-      context->peerSocket = socketOpen(SOCKET_TYPE_RAW_ETH, ETH_TYPE_EAPOL);
+      context->peerSocket = socketOpenEx(context->netContext,
+         SOCKET_TYPE_RAW_ETH, ETH_TYPE_EAPOL);
       //Failed to open socket?
       if(context->peerSocket == NULL)
       {

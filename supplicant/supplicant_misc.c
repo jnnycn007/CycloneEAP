@@ -6,7 +6,7 @@
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  *
- * Copyright (C) 2022-2025 Oryx Embedded SARL. All rights reserved.
+ * Copyright (C) 2022-2026 Oryx Embedded SARL. All rights reserved.
  *
  * This file is part of CycloneEAP Open.
  *
@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.5.4
+ * @version 2.6.0
  **/
 
 //Switch to the appropriate trace level
@@ -95,14 +95,14 @@ bool_t supplicantGetLinkState(SupplicantContext *context)
       interface->switchDriver->getLinkState != NULL)
    {
       //Get exclusive access
-      osAcquireMutex(&netMutex);
+      netLock(context->netContext);
 
       //Retrieve the link state of the specified port
       linkState = interface->switchDriver->getLinkState(interface,
          context->portIndex);
 
       //Release exclusive access
-      osReleaseMutex(&netMutex);
+      netUnlock(context->netContext);
    }
    else
    {
@@ -134,7 +134,7 @@ error_t supplicantAcceptPaeGroupAddr(SupplicantContext *context)
    if(context->interface != NULL)
    {
       //Get exclusive access
-      osAcquireMutex(&netMutex);
+      netLock(context->netContext);
 
       //Point to the physical interface
       physicalInterface = nicGetPhysicalInterface(context->interface);
@@ -181,7 +181,7 @@ error_t supplicantAcceptPaeGroupAddr(SupplicantContext *context)
       }
 
       //Release exclusive access
-      osReleaseMutex(&netMutex);
+      netUnlock(context->netContext);
    }
 
    //Return status code
@@ -208,7 +208,7 @@ error_t supplicantDropPaeGroupAddr(SupplicantContext *context)
    if(context->interface != NULL)
    {
       //Get exclusive access
-      osAcquireMutex(&netMutex);
+      netLock(context->netContext);
 
       //Point to the physical interface
       physicalInterface = nicGetPhysicalInterface(context->interface);
@@ -245,7 +245,7 @@ error_t supplicantDropPaeGroupAddr(SupplicantContext *context)
       }
 
       //Release exclusive access
-      osReleaseMutex(&netMutex);
+      netUnlock(context->netContext);
    }
 
    //Return status code

@@ -6,7 +6,7 @@
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  *
- * Copyright (C) 2022-2025 Oryx Embedded SARL. All rights reserved.
+ * Copyright (C) 2022-2026 Oryx Embedded SARL. All rights reserved.
  *
  * This file is part of CycloneEAP Open.
  *
@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.5.4
+ * @version 2.6.0
  **/
 
 //Switch to the appropriate trace level
@@ -174,23 +174,26 @@ bool_t authenticatorGetLinkState(AuthenticatorPort *port)
 {
    bool_t linkState;
    NetInterface *interface;
+   AuthenticatorContext *context;
 
+   //Point to the 802.1X authenticator context
+   context = port->context;
    //Point to the underlying network interface
-   interface = port->context->interface;
+   interface = context->interface;
 
    //Valid switch driver?
    if(interface->switchDriver != NULL &&
       interface->switchDriver->getLinkState != NULL)
    {
       //Get exclusive access
-      osAcquireMutex(&netMutex);
+      netLock(context->netContext);
 
       //Retrieve the link state of the specified port
       linkState = interface->switchDriver->getLinkState(interface,
          port->portIndex);
 
       //Release exclusive access
-      osReleaseMutex(&netMutex);
+      netUnlock(context->netContext);
    }
    else
    {
@@ -222,7 +225,7 @@ error_t authenticatorAcceptPaeGroupAddr(AuthenticatorContext *context)
    interface = context->interface;
 
    //Get exclusive access
-   osAcquireMutex(&netMutex);
+   netLock(context->netContext);
 
    //Valid switch driver?
    if(interface->switchDriver != NULL &&
@@ -246,7 +249,7 @@ error_t authenticatorAcceptPaeGroupAddr(AuthenticatorContext *context)
    }
 
    //Release exclusive access
-   osReleaseMutex(&netMutex);
+   netUnlock(context->netContext);
 
    //Return status code
    return error;
@@ -272,7 +275,7 @@ error_t authenticatorDropPaeGroupAddr(AuthenticatorContext *context)
    interface = context->interface;
 
    //Get exclusive access
-   osAcquireMutex(&netMutex);
+   netLock(context->netContext);
 
    //Valid switch driver?
    if(interface->switchDriver != NULL &&
@@ -296,7 +299,7 @@ error_t authenticatorDropPaeGroupAddr(AuthenticatorContext *context)
    }
 
    //Release exclusive access
-   osReleaseMutex(&netMutex);
+   netUnlock(context->netContext);
 
    //Return status code
    return error;
@@ -595,14 +598,14 @@ error_t authenticatorBuildRadiusRequest(AuthenticatorPort *port)
       sizeof(uint32_t));
 
    //Get exclusive access
-   osAcquireMutex(&netMutex);
+   netLock(context->netContext);
 
    //Retrieve the IP address of the NAS
-   error = ipSelectSourceAddr(&context->serverInterface, &context->serverIpAddr,
-      &ipAddr);
+   error = ipSelectSourceAddr(context->netContext, &context->serverInterface,
+      &context->serverIpAddr, &ipAddr);
 
    //Release exclusive access
-   osReleaseMutex(&netMutex);
+   netUnlock(context->netContext);
 
    //Any error to report?
    if(error)
