@@ -8,7 +8,7 @@
  *
  * Copyright (C) 2022-2026 Oryx Embedded SARL. All rights reserved.
  *
- * This file is part of CycloneTCP Open.
+ * This file is part of CycloneEAP Open.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.6.4
+ * @version 2.6.6
  **/
 
 #ifndef _SUPPLICANT_FSM_H

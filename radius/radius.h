@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.6.4
+ * @version 2.6.6
  **/
 
 #ifndef _RADIUS_H
@@ -43,6 +43,8 @@
 
 //RADIUS port number
 #define RADIUS_PORT 1812
+//Maximum length of RADIUS packets
+#define RADIUS_MAX_PACKET_SIZE 4096
 
 //C++ guard
 #ifdef __cplusplus

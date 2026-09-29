@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.6.4
+ * @version 2.6.6
  **/
 
 //Switch to the appropriate trace level
@@ -402,8 +402,13 @@ void supplicantProcessEapPacket(SupplicantContext *context,
    //Dump EAP header contents for debugging purpose
    eapDumpHeader(packet);
 
+   //The Length field is two octets and indicates the length, in octets, of the
+   //EAP packet including the Code, Identifier, Length, and Data fields
+   if(ntohs(packet->length) < sizeof(EapPacket))
+      return;
+
    //A message with the Length field set to a value larger than the number of
-   //received octets must be silently discarded (refer to RFC 3748, section 4.1)
+   //received octets must be silently discarded (refer to RFC 3748, section 4.0)
    if(ntohs(packet->length) > length)
       return;
 

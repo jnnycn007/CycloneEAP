@@ -25,7 +25,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @author Oryx Embedded SARL (www.oryx-embedded.com)
- * @version 2.6.4
+ * @version 2.6.6
  **/
 
 //Switch to the appropriate trace level
@@ -414,8 +414,12 @@ void authenticatorProcessEapolPdu(AuthenticatorContext *context)
    //Point to the port that matches the specified port index
    port = &context->ports[portIndex - 1];
 
+   //Any octets following the Packet Body field in the frame conveying the
+   //EAPOL PDU shall be ignored (refer to IEEE Std 802.1X-2004, section 11.4)
+   length = ntohs(pdu->packetBodyLen);
+
    //Malformed EAPOL packet?
-   if(msg.length < ntohs(pdu->packetBodyLen))
+   if(msg.length < (sizeof(EapolPdu) + length))
    {
       //Number of EAPOL frames that have been received by this authenticator
       //in which the Packet Body Length field is invalid
@@ -424,10 +428,6 @@ void authenticatorProcessEapolPdu(AuthenticatorContext *context)
       //Exit immediately
       return;
    }
-
-   //Any octets following the Packet Body field in the frame conveying the
-   //EAPOL PDU shall be ignored (refer to IEEE Std 802.1X-2004, section 11.4)
-   length = ntohs(pdu->packetBodyLen);
 
    //Number of valid EAPOL frames of any type that have been received
    port->stats.eapolFramesRx++;
@@ -492,8 +492,13 @@ void authenticatorProcessEapPacket(AuthenticatorPort *port,
    //Dump EAP header contents for debugging purpose
    eapDumpHeader(packet);
 
+   //The Length field is two octets and indicates the length, in octets, of the
+   //EAP packet including the Code, Identifier, Length, and Data fields
+   if(ntohs(packet->length) < sizeof(EapPacket))
+      return;
+
    //A message with the Length field set to a value larger than the number of
-   //received octets must be silently discarded (refer to RFC 3748, section 4.1)
+   //received octets must be silently discarded (refer to RFC 3748, section 4.0)
    if(ntohs(packet->length) > length)
       return;
 
@@ -859,17 +864,24 @@ void authenticatorProcessRadiusPacket(AuthenticatorContext *context)
    //Point to the RADIUS packet
    packet = (RadiusPacket *) context->rxBuffer;
 
+   //Octets outside the range of the Length field must be treated as padding
+   //and ignored on reception (refer to RFC 2865, section 3)
+   length = ntohs(packet->length);
+
    //If the packet is shorter than the Length field indicates, it must be
-   //silently discarded (refer to RFC 2865, section 3)
-   if(msg.length < ntohs(packet->length))
+   //silently discarded
+   if(msg.length < length)
+      return;
+
+   //The minimum length is 20 and maximum length is 4096
+   if(length < sizeof(RadiusPacket) || length > RADIUS_MAX_PACKET_SIZE)
       return;
 
    //Dump RADIUS header contents for debugging purpose
-   radiusDumpPacket(packet, ntohs(packet->length));
+   radiusDumpPacket(packet, length);
 
-   //Octets outside the range of the Length field must be treated as padding
-   //and ignored on reception
-   length = ntohs(packet->length) - sizeof(RadiusPacket);
+   //Calculate the length of the RADIUS attributes
+   length -= sizeof(RadiusPacket);
 
    //The RADIUS packet type is determined by the Code field
    if(packet->code != RADIUS_CODE_ACCESS_ACCEPT &&
